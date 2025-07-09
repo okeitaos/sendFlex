@@ -1,0 +1,137 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <link rel="stylesheet" href="https://bit.ly/fontiton5" type="text/css" charset="utf-8" /> <style type="text/css"> body { font-family: 'line_seed_sans_th'; } </style>  
+      <script src="https://cdn.tailwindcss.com"></script> 
+      <title>ShareTargetPicker</title>
+      <H1>จัดทำโดย Keita Saejong </H1>
+    </head>
+    <body>
+          <style>
+	body {
+  		background-image: url('https://drexel.edu/~/media/Drexel/Core-Site-Group/Core/Images/admissions/visit-tours/virtual-background-downloads/blue-pattern.ashx');
+		background-repeat: no-repeat;
+		background-attachment: fixed;
+		background-size: cover;
+	}
+</style> 
+      
+        <form  id="send-message">
+             <div class="flex min-h-full flex-col justify-center px-6 py-12 lg:px-8">
+  
+    <img class="mx-auto h-52 w-auto rounded-full" id="profileurl" src="https://sv1.picz.in.th/images/2023/02/05/LRbmxg.png" alt="Profile">
+    <h2 class="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900" id="displaynamefield"></h2>
+               
+               <div class="flex gap-x-4 sm:col-span-2">
+                   
+               <label class="block text-sm font-semibold leading-6 text-gray-900">ป้อนข้อความช่องแชท </label>
+    </div>       
+    <input type="text" id="message1" name="message1" class="px-1 appearance-none bg-blue-200 border-none focus:outline-none" placeholder="ป้อนข้อความ">
+                 <div class="flex gap-x-4 sm:col-span-2">
+                   
+               <label class="block text-sm font-semibold leading-6 text-gray-900">ป้อนข้อความ JSON</label>
+    </div>       
+               <textarea id="message" name="message" cols="30" rows="10"class="px-1 appearance-none bg-blue-200 border-none focus:outline-none" placeholder="ป้อน CODE JSON"></textarea>
+
+<br/>
+                   <button id="send" class="rounded-r bg-blue-400 py-1 px-1">Send</button>
+               <br>
+           <button type="button" class="rounded-r bg-blue-400 py-1 px-1" id="logout" onclick="LogoutAction();">ออกจากระบบ</button>
+             
+          </div>
+        </form>
+        
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
+        <!-- LIFF SDK -->
+        <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+      <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script>
+            var userId = "";
+            document.getElementById("logout").style.display ="none";
+            window.onload = function() {
+                initializeLiff("{ใส่ Liff Id}");    //ใส่ Liff Id
+            };
+
+            function initializeLiff(myLiffId) {
+                liff
+                    .init({
+                        liffId: myLiffId
+                    })
+                    .then(() => {
+                      
+                        if (!liff.isInClient() && !liff.isLoggedIn()){
+                            window.alert("กรุณาเข้าสู่ระบบบัญชี LINE ของคุณ");
+                            liff.login();
+                        }else{
+                          
+                            liff.getProfile().then(function(profile) {
+                                document.getElementById('profileurl').src = '' + profile.pictureUrl
+                                document.getElementById('displaynamefield').textContent = 'ยินดีต้อนรับ คุณ ' + profile.displayName + 'ครับ';
+                                userId = profile.userId;
+                                if (!liff.isInClient()){
+                                    document.getElementById("logout").style.display = "block"
+                                }
+                            }).catch(function(error) {
+                                window.alert('Error getting profile: ' + error);
+                            })
+                        }
+
+                    })
+                    .catch((err) => {
+                        document.getElementById('displaynamefield').textContent = err;
+                    });
+            }
+          
+            $(function() {
+                $('#send').click(function(e) {
+                    e.preventDefault();
+                    var val1 = $('#message1').val();
+                    var val = $('#message').val();
+                    if (liff.isApiAvailable('shareTargetPicker')) {
+                    liff.shareTargetPicker([
+                      //start flex
+                       {
+  "type": "flex",
+  "altText": ""+val1,
+  "contents": JSON.parse(val)
+}
+                      //end flex
+                    ])
+                      
+                        .then(function (res) {
+                        if (res) {  alert("ส่งข้อความสำเร็จ")
+                          
+                        
+                          liff.closeWindow();
+                            console.log(`[${res.status}] Message Completed`)
+                          
+                        } else {
+                            const [majorVer, minorVer] = (liff.getLineVersion() || "").split('.');
+                            if (parseInt(majorVer) == 10 && parseInt(minorVer) < 11) {
+                            console.log('TargetPicker was opened at least. Whether succeeded to send message is unclear')
+                            } else {
+                            // LINE 10.11.0 -
+                            // sending message canceled
+                            console.log('TargetPicker was closed!')
+                            }
+                        }
+                        }).catch(function (error) {
+                        
+                        console.log('something wrong happen')
+                        })
+                    }else{
+                        alert("shareTargetPicker ไม่ได้")
+                    }
+                });
+            });
+           
+            function LogoutAction(){
+                liff.logout();
+                window.location.reload();
+            }
+        </script>
+      
+    </body>
+</html>
+
